@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KING — TikTok Ad</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --gold:    #c9a84c;
+      --black:   #0a0a0a;
+      --white:   #f5f5f0;
+      --charcoal:#1c1c1c;
+    }
+
+    body {
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      background: var(--black);
+      font-family: 'Georgia', serif;
+    }
+
+    /* ── CLIPS ── */
+    .clip {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* SCENE 1 — LOGO REVEAL */
+    #scene1 {
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+
+    .logo-line {
+      width: 0;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .logo-text {
+      font-size: 160px;
+      font-weight: 300;
+      letter-spacing: 40px;
+      color: var(--gold);
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    .logo-sub {
+      font-family: 'Arial', sans-serif;
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 14px;
+      text-transform: uppercase;
+      color: var(--white);
+      opacity: 0;
+    }
+
+    /* SCENE 2 — HOMBRE */
+    #scene2 {
+      background: url('https://images.unsplash.com/photo-1541346183200-e8e117d945b8?w=1080&q=90') center/cover no-repeat;
+    }
+
+    /* SCENE 3 — MUJER */
+    #scene3 {
+      background: url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1080&q=90') center/cover no-repeat;
+    }
+
+    /* SCENE 4 — COLECCION */
+    #scene4 {
+      background: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1080&q=90') center top/cover no-repeat;
+    }
+
+    /* SCENE 5 — CIERRE */
+    #scene5 {
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    /* ── OVERLAYS ── */
+    .overlay-dark {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(10,10,10,0.3) 0%,
+        rgba(10,10,10,0.1) 40%,
+        rgba(10,10,10,0.7) 75%,
+        rgba(10,10,10,0.95) 100%
+      );
+    }
+
+    /* ── TEXT BLOCKS ── */
+    .text-block {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 80px 70px 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .tag {
+      font-family: 'Arial', sans-serif;
+      font-size: 24px;
+      font-weight: 300;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+
+    .headline {
+      font-size: 88px;
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--white);
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    .headline em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .body-text {
+      font-family: 'Arial', sans-serif;
+      font-size: 32px;
+      font-weight: 300;
+      line-height: 1.6;
+      color: rgba(245,245,240,0.75);
+      max-width: 800px;
+      opacity: 0;
+    }
+
+    /* ── GOLD BAR ── */
+    .gold-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    /* ── CLOSING ELEMENTS ── */
+    .close-logo {
+      font-size: 140px;
+      font-weight: 300;
+      letter-spacing: 36px;
+      color: var(--gold);
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    .close-divider {
+      width: 0;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .close-tagline {
+      font-family: 'Arial', sans-serif;
+      font-size: 30px;
+      font-weight: 300;
+      letter-spacing: 10px;
+      text-transform: uppercase;
+      color: var(--white);
+      opacity: 0;
+    }
+
+    .close-cta {
+      margin-top: 20px;
+      padding: 36px 100px;
+      border: 1px solid var(--gold);
+      font-family: 'Arial', sans-serif;
+      font-size: 28px;
+      font-weight: 400;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    /* ── PARTICLES (decorative dots) ── */
+    .dot {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0;
+    }
+
+    /* ── NARRATION (hidden, for TTS reference) ── */
+    .narration { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- NARRACIÓN (referencia para TTS) -->
+  <div class="narration">
+    <p data-scene="1">King. La elegancia que define tu presencia.</p>
+    <p data-scene="2">Para el hombre que no acepta menos que lo mejor.</p>
+    <p data-scene="3">Para la mujer que sabe exactamente quién es.</p>
+    <p data-scene="4">Nueva colección dos mil veintiséis. Formal. Atemporal. King.</p>
+    <p data-scene="5">Descubre King. Vístete como realeza.</p>
+  </div>
+
+  <!-- SCENE 1: LOGO REVEAL -->
+  <div class="clip" id="scene1">
+    <div class="logo-line" id="line1"></div>
+    <div class="logo-text" id="logoText">KING</div>
+    <div class="logo-line" id="line2"></div>
+    <div class="logo-sub" id="logoSub">Moda Formal · 2026</div>
+
+    <!-- Partículas decorativas -->
+    <div class="dot" style="top:20%;left:15%;"></div>
+    <div class="dot" style="top:30%;right:20%;"></div>
+    <div class="dot" style="bottom:35%;left:25%;"></div>
+    <div class="dot" style="bottom:25%;right:15%;"></div>
+  </div>
+
+  <!-- SCENE 2: HOMBRE -->
+  <div class="clip" id="scene2">
+    <div class="overlay-dark"></div>
+    <div class="gold-bar" id="bar2"></div>
+    <div class="text-block">
+      <p class="tag" id="tag2">Colección Hombre</p>
+      <h2 class="headline" id="h2">El traje<br>que te hace<br><em>rey</em></h2>
+      <p class="body-text" id="body2">Cortes precisos. Telas de primera. Presencia que se recuerda.</p>
+    </div>
+  </div>
+
+  <!-- SCENE 3: MUJER -->
+  <div class="clip" id="scene3">
+    <div class="overlay-dark"></div>
+    <div class="gold-bar" id="bar3"></div>
+    <div class="text-block">
+      <p class="tag" id="tag3">Colección Mujer</p>
+      <h2 class="headline" id="h3">Poder vestido<br>de <em>elegancia</em></h2>
+      <p class="body-text" id="body3">Para cada momento importante de tu vida.</p>
+    </div>
+  </div>
+
+  <!-- SCENE 4: COLECCION UNISEX -->
+  <div class="clip" id="scene4">
+    <div class="overlay-dark"></div>
+    <div class="gold-bar" id="bar4"></div>
+    <div class="text-block">
+      <p class="tag" id="tag4">Nueva Colección 2026</p>
+      <h2 class="headline" id="h4">Formal.<br>Atemporal.<br><em>King.</em></h2>
+      <p class="body-text" id="body4">Hecho a medida para quienes saben lo que valen.</p>
+    </div>
+  </div>
+
+  <!-- SCENE 5: CIERRE -->
+  <div class="clip" id="scene5">
+    <div class="close-logo" id="closeLogo">KING</div>
+    <div class="close-divider" id="closeDivider"></div>
+    <div class="close-tagline" id="closeTagline">Vístete como realeza</div>
+    <div class="close-cta" id="closeCta">Ver Colección</div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // ── SCENE 1: Logo Reveal (0 - 4s) ──────────────────────────────
+    tl
+      .set('#scene1', { opacity: 1 })
+      .to('#line1',    { width: 300, duration: 0.8, ease: 'power2.inOut' })
+      .to('#line2',    { width: 300, duration: 0.8, ease: 'power2.inOut' }, '<')
+      .to('#logoText', { opacity: 1, y: 0, duration: 0.9 }, '-=0.4')
+      .to('#logoSub',  { opacity: 1, duration: 0.8 }, '-=0.3')
+
+      // partículas
+      .to('.dot', {
+        opacity: 0.6,
+        scale: 1,
+        stagger: 0.15,
+        duration: 0.5
+      }, '-=0.5')
+
+      // pausa en scene 1
+      .to({}, { duration: 1.2 })
+
+      // fade out scene 1
+      .to('#scene1', { opacity: 0, duration: 0.6 })
+
+    // ── SCENE 2: Hombre (4s - 9s) ──────────────────────────────────
+      .set('#scene2', { opacity: 1 })
+      .to('#bar2',   { scaleX: 1, duration: 0.5, ease: 'power2.inOut' })
+      .to('#tag2',   { opacity: 1, x: 0, duration: 0.6 }, '-=0.2')
+      .to('#h2',     { opacity: 1, y: 0, duration: 0.8 }, '-=0.3')
+      .to('#body2',  { opacity: 1, duration: 0.7 }, '-=0.3')
+      .to({}, { duration: 1.8 })
+      .to('#scene2', { opacity: 0, duration: 0.6 })
+
+    // ── SCENE 3: Mujer (9s - 14s) ──────────────────────────────────
+      .set('#scene3', { opacity: 1 })
+      .to('#bar3',   { scaleX: 1, duration: 0.5, ease: 'power2.inOut' })
+      .to('#tag3',   { opacity: 1, x: 0, duration: 0.6 }, '-=0.2')
+      .to('#h3',     { opacity: 1, y: 0, duration: 0.8 }, '-=0.3')
+      .to('#body3',  { opacity: 1, duration: 0.7 }, '-=0.3')
+      .to({}, { duration: 1.8 })
+      .to('#scene3', { opacity: 0, duration: 0.6 })
+
+    // ── SCENE 4: Colección (14s - 19s) ─────────────────────────────
+      .set('#scene4', { opacity: 1 })
+      .to('#bar4',   { scaleX: 1, duration: 0.5, ease: 'power2.inOut' })
+      .to('#tag4',   { opacity: 1, x: 0, duration: 0.6 }, '-=0.2')
+      .to('#h4',     { opacity: 1, y: 0, duration: 0.8 }, '-=0.3')
+      .to('#body4',  { opacity: 1, duration: 0.7 }, '-=0.3')
+      .to({}, { duration: 1.8 })
+      .to('#scene4', { opacity: 0, duration: 0.6 })
+
+    // ── SCENE 5: Cierre (19s - 24s) ────────────────────────────────
+      .set('#scene5', { opacity: 1 })
+      .to('#closeLogo',    { opacity: 1, scale: 1, duration: 1, ease: 'back.out(1.5)' })
+      .to('#closeDivider', { width: 400, duration: 0.6, ease: 'power2.inOut' }, '-=0.3')
+      .to('#closeTagline', { opacity: 1, duration: 0.7 }, '-=0.2')
+      .to('#closeCta',     { opacity: 1, y: 0, duration: 0.7 }, '-=0.3')
+      .to({}, { duration: 1.5 });
+  </script>
+</body>
+</html>
