@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>KING — Printer Ad</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --gold:    #c9a84c;
+      --black:   #0a0a0a;
+      --white:   #f5f5f0;
+      --paper:   #faf9f6;
+      --gray:    #888880;
+      --ink:     #1a1a1a;
+    }
+
+    body {
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      background: #111;
+      font-family: 'Georgia', serif;
+    }
+
+    /* ── BACKGROUND ── */
+    .bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, #1e1c18 0%, #0a0a0a 70%);
+    }
+
+    /* ── SCENE WRAPPER ── */
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 160px;
+      gap: 0;
+    }
+
+    /* ── PRINTER ── */
+    .printer-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+    }
+
+    .printer-body {
+      width: 520px;
+      height: 180px;
+      background: linear-gradient(160deg, #2a2a2a 0%, #1a1a1a 100%);
+      border-radius: 24px 24px 16px 16px;
+      border: 2px solid #333;
+      position: relative;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+      z-index: 3;
+    }
+
+    /* Slot de salida del papel */
+    .printer-slot {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 360px;
+      height: 14px;
+      background: #0a0a0a;
+      border-radius: 3px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    /* Luz LED */
+    .printer-led {
+      position: absolute;
+      top: 28px;
+      right: 40px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 12px var(--gold);
+      animation: ledBlink 1.2s ease infinite;
+    }
+
+    @keyframes ledBlink {
+      0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--gold); }
+      50%       { opacity: 0.4; box-shadow: 0 0 4px var(--gold); }
+    }
+
+    /* Logo de la impresora */
+    .printer-brand {
+      position: absolute;
+      top: 30px;
+      left: 40px;
+      font-family: 'Arial', sans-serif;
+      font-size: 20px;
+      letter-spacing: 4px;
+      color: #444;
+      text-transform: uppercase;
+    }
+
+    /* Rodillos decorativos */
+    .printer-roller {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 380px;
+      height: 20px;
+      background: linear-gradient(to bottom, #333, #222);
+      border-radius: 4px;
+    }
+
+    /* ── PAPEL QUE SALE ── */
+    .paper-wrap {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: -2px;
+    }
+
+    /* Papel principal */
+    .paper {
+      width: 360px;
+      height: 0; /* crece con GSAP */
+      background: var(--paper);
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+      box-shadow: 4px 8px 40px rgba(0,0,0,0.5);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 28px;
+    }
+
+    /* Líneas de impresión (scan) */
+    .scan-line {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(to right,
+        transparent 0%,
+        rgba(201,168,76,0.6) 30%,
+        rgba(201,168,76,0.9) 50%,
+        rgba(201,168,76,0.6) 70%,
+        transparent 100%
+      );
+      box-shadow: 0 0 12px rgba(201,168,76,0.4);
+      opacity: 0;
+    }
+
+    /* Contenido del papel */
+    .paper-content {
+      width: 100%;
+      padding-top: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+    }
+
+    .paper-logo {
+      font-size: 72px;
+      font-weight: 300;
+      letter-spacing: 20px;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .paper-divider {
+      width: 0;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .paper-tagline {
+      font-family: 'Arial', sans-serif;
+      font-size: 13px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #666;
+    }
+
+    /* Código de barras simulado */
+    .barcode {
+      display: flex;
+      gap: 2px;
+      margin-top: 8px;
+      opacity: 0;
+    }
+
+    .bar {
+      background: var(--ink);
+      height: 40px;
+    }
+
+    .paper-number {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #999;
+      letter-spacing: 2px;
+      margin-top: 4px;
+      opacity: 0;
+    }
+
+    /* ── POST CARD (abajo) ── */
+    .post-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 840px;
+      opacity: 0;
+    }
+
+    /* Header del post (estilo red social) */
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 28px 32px;
+      background: #1a1a1a;
+      border-radius: 24px 24px 0 0;
+      border: 1px solid #2a2a2a;
+      border-bottom: none;
+    }
+
+    .post-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), #8b6914);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--black);
+      letter-spacing: 2px;
+      flex-shrink: 0;
+    }
+
+    .post-user {
+      flex: 1;
+    }
+
+    .post-username {
+      font-family: 'Arial', sans-serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 2px;
+    }
+
+    .post-handle {
+      font-family: 'Arial', sans-serif;
+      font-size: 20px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .post-verified {
+      width: 36px;
+      height: 36px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    /* Imagen del modelo */
+    .post-image {
+      width: 840px;
+      height: 840px;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      filter: brightness(0.95);
+    }
+
+    /* Footer del post */
+    .post-footer {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-top: none;
+      border-radius: 0 0 24px 24px;
+      padding: 28px 32px 40px;
+    }
+
+    .post-actions {
+      display: flex;
+      gap: 36px;
+      margin-bottom: 20px;
+    }
+
+    .post-action {
+      font-family: 'Arial', sans-serif;
+      font-size: 22px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .post-action.liked { color: #e0425a; }
+
+    .post-caption {
+      font-family: 'Arial', sans-serif;
+      font-size: 24px;
+      color: var(--white);
+      line-height: 1.6;
+    }
+
+    .post-caption strong {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .post-hashtags {
+      margin-top: 12px;
+      font-family: 'Arial', sans-serif;
+      font-size: 22px;
+      color: #4a90d9;
+      line-height: 1.8;
+    }
+
+    .post-time {
+      margin-top: 16px;
+      font-family: 'Arial', sans-serif;
+      font-size: 18px;
+      color: #444;
+      letter-spacing: 1px;
+    }
+
+    /* ── TÍTULO SUPERIOR ── */
+    .top-label {
+      position: absolute;
+      top: 80px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'Arial', sans-serif;
+      font-size: 22px;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg"></div>
+
+  <!-- ETIQUETA SUPERIOR -->
+  <div class="top-label" id="topLabel">Nueva Colección 2026</div>
+
+  <div class="scene">
+
+    <!-- IMPRESORA -->
+    <div class="printer-wrap" id="printerWrap">
+      <div class="printer-body">
+        <div class="printer-brand">King Pro</div>
+        <div class="printer-led"></div>
+        <div class="printer-roller"></div>
+        <div class="printer-slot"></div>
+      </div>
+
+      <!-- PAPEL SALIENDO -->
+      <div class="paper-wrap">
+        <div class="paper" id="paper">
+          <div class="scan-line" id="scanLine"></div>
+
+          <div class="paper-content" id="paperContent">
+            <div class="paper-logo">KING</div>
+
+            <div class="paper-divider" id="paperDivider"></div>
+            <div class="paper-tagline">Moda Formal · 2026</div>
+
+            <!-- Código de barras decorativo -->
+            <div class="barcode" id="barcode">
+              <div class="bar" style="width:3px"></div>
+              <div class="bar" style="width:1px"></div>
+              <div class="bar" style="width:4px"></div>
+              <div class="bar" style="width:1px"></div>
+              <div class="bar" style="width:2px"></div>
+              <div class="bar" style="width:3px"></div>
+              <div class="bar" style="width:1px"></div>
+              <div class="bar" style="width:4px"></div>
+              <div class="bar" style="width:2px"></div>
+              <div class="bar" style="width:1px"></div>
+              <div class="bar" style="width:3px"></div>
+              <div class="bar" style="width:2px"></div>
+              <div class="bar" style="width:1px"></div>
+              <div class="bar" style="width:4px"></div>
+              <div class="bar" style="width:1px"></div>
+              <div class="bar" style="width:3px"></div>
+              <div class="bar" style="width:2px"></div>
+              <div class="bar" style="width:1px"></div>
+              <div class="bar" style="width:3px"></div>
+              <div class="bar" style="width:4px"></div>
+            </div>
+            <div class="paper-number" id="paperNumber">KING-2026-001-FRM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST CARD -->
+  <div class="post-wrap" id="postWrap">
+    <div class="post-header">
+      <div class="post-avatar">K</div>
+      <div class="post-user">
+        <div class="post-username">King Formal</div>
+        <div class="post-handle">@kingformal.mx</div>
+      </div>
+      <div class="post-verified">✓</div>
+    </div>
+
+    <img
+      class="post-image"
+      src="https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=840&q=90"
+      alt="Model King"
+    />
+
+    <div class="post-footer">
+      <div class="post-actions">
+        <div class="post-action liked">♥ 4,821</div>
+        <div class="post-action">💬 238</div>
+        <div class="post-action">✈ Compartir</div>
+      </div>
+      <div class="post-caption">
+        <strong>kingformal.mx</strong> Nueva colección Signature Series ya disponible. Cada pieza, una declaración. 👑
+      </div>
+      <div class="post-hashtags">
+        #King #ModaFormal #Elegancia #NuevaColeccion #OOTD
+      </div>
+      <div class="post-time">hace 2 horas · Ver los 238 comentarios</div>
+    </div>
+  </div>
+
+  <script>
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    const paperHeight = 320;
+
+    tl
+      // 0s — aparece etiqueta superior
+      .to('#topLabel', { opacity: 1, duration: 0.8 })
+
+      // 0.5s — aparece impresora
+      .to('#printerWrap', { opacity: 1, y: 0, duration: 0.9 }, '-=0.4')
+
+      // 1.5s — pausa (impresora "calienta")
+      .to({}, { duration: 0.8 })
+
+      // 2.3s — el papel empieza a salir
+      .to('#paper', {
+        height: paperHeight,
+        duration: 3.2,
+        ease: 'none'
+      })
+
+      // scan line sube mientras el papel sale
+      .to('#scanLine', { opacity: 1, duration: 0.3 }, '-=3.2')
+      .to('#scanLine', {
+        top: paperHeight - 4,
+        duration: 3.0,
+        ease: 'none'
+      }, '-=3.0')
+      .to('#scanLine', { opacity: 0, duration: 0.3 }, '-=0.3')
+
+      // contenido del papel aparece mientras sale
+      .to('#paperContent', { opacity: 1, duration: 0.6 }, '-=2.0')
+      .to('#paperDivider', { width: '100%', duration: 0.5, ease: 'power2.inOut' }, '-=0.3')
+      .to('#barcode',      { opacity: 1, duration: 0.4 }, '-=0.2')
+      .to('#paperNumber',  { opacity: 1, duration: 0.4 }, '-=0.2')
+
+      // 5.5s — pausa con impresión completa
+      .to({}, { duration: 1.0 })
+
+      // 6.5s — post card sube desde abajo
+      .to('#postWrap', {
+        opacity: 1,
+        duration: 1.0,
+        ease: 'power2.out'
+      })
+
+      // impresora sube ligeramente para dar espacio
+      .to('#printerWrap', {
+        y: -60,
+        duration: 1.0,
+        ease: 'power2.out'
+      }, '-=1.0')
+
+      // 7.5s — pausa final
+      .to({}, { duration: 3.5 });
+  </script>
+</body>
+</html>
